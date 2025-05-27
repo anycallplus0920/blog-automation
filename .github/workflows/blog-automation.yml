@@ -2,7 +2,7 @@ name: Blog Automation
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 6시간마다 실행
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
       run: python blog_automation.py
     
     - name: Upload results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: collected-posts
         path: collected_posts.json
