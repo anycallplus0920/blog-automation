@@ -11,24 +11,32 @@ BLOG_URLS = [
     "https://blog.naver.com/ijehkorea"  # 마켐이마지 국내 공식1호 대리점 아이제코리아
 ]
 
-# 제외할 키워드 (대소문자 구분 없음)
-EXCLUDE_KEYWORDS = [
+# 제거할 키워드 (내용에서 삭제할 단어들)
+REMOVE_KEYWORDS = [
     "공식대리점", "공식 대리점", "대리점", "대리점업체", 
     "총대리점", "공식총대리점", "정식대리점", "독점대리점",
     "영업대행", "판매대행", "판매처", "취급점"
 ]
 
-def should_exclude_post(title, content):
+def clean_text(text):
     """
-    제목이나 내용에 제외 키워드가 포함되어 있는지 확인
+    텍스트에서 불필요한 키워드를 제거합니다.
     """
-    text_to_check = (title + " " + content).lower()
+    cleaned_text = text
+    removed_words = []
     
-    for keyword in EXCLUDE_KEYWORDS:
-        if keyword.lower() in text_to_check:
-            print(f"  → 제외됨: '{keyword}' 키워드 포함")
-            return True
-    return False
+    for keyword in REMOVE_KEYWORDS:
+        if keyword in cleaned_text:
+            cleaned_text = cleaned_text.replace(keyword, "")
+            removed_words.append(keyword)
+    
+    # 연속된 공백 정리
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+    
+    if removed_words:
+        print(f"    🧹 제거된 단어: {', '.join(removed_words)}")
+    
+    return cleaned_text
 
 def get_blog_links(blog_url, max_posts=5):
     """
@@ -121,10 +129,14 @@ def extract_post_content(post_url):
         if not content:
             content = "본문 추출 실패"
         
+        # 키워드 제거 (제목과 내용에서)
+        cleaned_title = clean_text(title)
+        cleaned_content = clean_text(content[:1000])  # 처음 1000자만 저장
+        
         return {
-            "title": title,
+            "title": cleaned_title,
             "link": post_url,
-            "content": content[:1000]  # 처음 1000자만 저장
+            "content": cleaned_content
         }
         
     except Exception as e:
@@ -137,7 +149,6 @@ def extract_post_content(post_url):
 
 def main():
     collected = []
-    excluded_count = 0
     
     print("=== 네이버 블로그 자동 수집 시작 ===")
     
@@ -145,7 +156,7 @@ def main():
         print(f"\n[{i}/{len(BLOG_URLS)}] 블로그 수집: {blog_url}")
         
         # 블로그 링크 수집
-        links = get_blog_links(blog_url, max_posts=8)  # 여유분 확보
+        links = get_blog_links(blog_url, max_posts=6)  # 여유분 확보
         
         valid_posts = 0
         for j, link in enumerate(links, 1):
@@ -154,13 +165,8 @@ def main():
                 
             print(f"  [{j}] 수집 중: {link}")
             
-            # 본문 추출
+            # 본문 추출 (키워드는 자동으로 제거됨)
             post = extract_post_content(link)
-            
-            # 제외 키워드 검사
-            if should_exclude_post(post["title"], post["content"]):
-                excluded_count += 1
-                continue
             
             # 수집 성공
             collected.append(post)
@@ -176,8 +182,8 @@ def main():
     
     print(f"\n=== 수집 완료 ===")
     print(f"✅ 총 수집된 글: {len(collected)}개")
-    print(f"❌ 제외된 글: {excluded_count}개")
     print(f"📁 저장 파일: collected_posts.json")
+    print(f"🧹 모든 글에서 대리점 관련 단어가 자동 삭제되었습니다.")
     
     # 수집된 글 제목 미리보기
     if collected:
