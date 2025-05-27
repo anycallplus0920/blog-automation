@@ -53,13 +53,14 @@ jobs:
         cat collected_posts.json >> public/index.html
         echo "</pre></body></html>" >> public/index.html
         
-    # GitHub Pages 배포 (선택사항)
+    # GitHub Pages 배포 (선택사항) - 권한 설정 필요시에만 사용
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
+      # 이 단계는 선택사항입니다. 오류 발생시 주석처리하세요.
         
     # 이메일로 결과 전송 (선택사항)
     - name: Send email notification
