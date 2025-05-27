@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
@@ -38,9 +38,9 @@ jobs:
     
     # Artifact로 파일 업로드 (다운로드 가능)
     - name: Upload collected posts as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: collected-posts-$(date +%Y%m%d-%H%M%S)
+        name: collected-posts
         path: collected_posts.json
         retention-days: 30
     
@@ -55,7 +55,7 @@ jobs:
         
     # GitHub Pages 배포 (선택사항)
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
