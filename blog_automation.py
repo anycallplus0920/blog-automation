@@ -38,7 +38,7 @@ def clean_text(text):
     
     return cleaned_text
 
-def get_blog_links(blog_url, max_posts=5):
+def get_blog_links(blog_url, max_posts=15):
     """
     블로그 메인에서 최신 글 링크를 가져옵니다.
     """
@@ -155,12 +155,12 @@ def main():
     for i, blog_url in enumerate(BLOG_URLS, 1):
         print(f"\n[{i}/{len(BLOG_URLS)}] 블로그 수집: {blog_url}")
         
-        # 블로그 링크 수집
-        links = get_blog_links(blog_url, max_posts=6)  # 여유분 확보
+        # 블로그 링크 수집 (15개씩 수집)
+        links = get_blog_links(blog_url, max_posts=15)
         
         valid_posts = 0
         for j, link in enumerate(links, 1):
-            if valid_posts >= 5:  # 블로그당 최대 5개
+            if valid_posts >= 15:  # 블로그당 최대 15개
                 break
                 
             print(f"  [{j}] 수집 중: {link}")
@@ -173,8 +173,8 @@ def main():
             valid_posts += 1
             print(f"    ✅ 수집 완료: {post['title'][:50]}...")
             
-            # 네이버 차단 방지를 위한 대기
-            time.sleep(3)
+            # 네이버 차단 방지를 위한 대기 (대량 수집 시 약간 늘림)
+            time.sleep(2)
     
     # 결과 저장
     with open("collected_posts.json", "w", encoding="utf-8") as f:
