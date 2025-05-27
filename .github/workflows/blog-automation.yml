@@ -2,30 +2,27 @@ name: Blog Automation
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    - cron: '0 */6 * * *'  # 6시간마다 실행
+  workflow_dispatch:        # 수동 실행도 가능
 
 jobs:
   collect-and-process:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.9'
-    
+
     - name: Install dependencies
       run: |
-        pip install requests beautifulsoup4
-    
+        pip install feedparser requests beautifulsoup4
+
     - name: Run blog automation
       run: python blog_automation.py
-    
-    - name: Upload results
-      uses: actions/upload-artifact@v2
-      with:
-        name: collected-posts
-        path: collected_posts.json
+
+    - name: Show collected posts (first 500 chars)
+      run: head -c 500 collected_posts.json
