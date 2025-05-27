@@ -2,8 +2,8 @@ name: Blog Automation
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 6시간마다 실행 (수정: 별표 5개)
-  workflow_dispatch:        # 수동 실행도 가능
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   collect-and-process:
@@ -24,50 +24,21 @@ jobs:
     - name: Run blog automation
       run: python blog_automation.py
     
-    - name: Show collected posts (first 500 chars)
+    - name: Show results
       run: |
         if [ -f collected_posts.json ]; then
-          echo "=== 수집된 포스트 미리보기 ==="
+          echo "=== 수집 완료! ==="
+          echo "파일 크기: $(ls -lh collected_posts.json | awk '{print $5}')"
+          echo "=== 내용 미리보기 ==="
           head -c 500 collected_posts.json
-          echo ""
-          echo "=== 파일 정보 ==="
-          ls -la collected_posts.json
         else
-          echo "collected_posts.json 파일이 생성되지 않았습니다."
+          echo "❌ collected_posts.json 파일이 생성되지 않았습니다."
         fi
     
-    # Artifact로 파일 업로드 (다운로드 가능)
-    - name: Upload collected posts as artifact
+    # 이것만으로도 충분합니다!
+    - name: Upload results
       uses: actions/upload-artifact@v4
       with:
         name: collected-posts
         path: collected_posts.json
         retention-days: 30
-    
-    # GitHub Pages용 파일도 생성 (웹에서 바로 확인 가능)
-    - name: Create web-accessible file
-      run: |
-        mkdir -p public
-        cp collected_posts.json public/
-        echo "<html><body><h1>최신 수집 포스트</h1><pre>" > public/index.html
-        cat collected_posts.json >> public/index.html
-        echo "</pre></body></html>" >> public/index.html
-        
-    # GitHub Pages 배포 (선택사항) - 권한 설정 필요시에만 사용
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
-      if: github.ref == 'refs/heads/main'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
-      # 이 단계는 선택사항입니다. 오류 발생시 주석처리하세요.
-        
-    # 이메일로 결과 전송 (선택사항)
-    - name: Send email notification
-      if: always()
-      run: |
-        echo "블로그 자동화 완료" > result.txt
-        echo "실행 시간: $(date)" >> result.txt
-        if [ -f collected_posts.json ]; then
-          echo "수집된 포스트 수: $(cat collected_posts.json | grep -o '"title"' | wc -l)" >> result.txt
-        fi
